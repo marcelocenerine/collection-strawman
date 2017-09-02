@@ -607,11 +607,7 @@ trait Iterator[+A] extends IterableOnce[A] { self =>
       else Iterator.empty.next()
   }
 
-  def zip[B](that: IterableOnce[B]): Iterator[(A, B)] = new Iterator[(A, B)] {
-    val thatIterator = that.iterator()
-    def hasNext = self.hasNext && thatIterator.hasNext
-    def next() = (self.next(), thatIterator.next())
-  }
+  def zip[B](that: IterableOnce[B]): Iterator[(A, B)] = zipWith(that)((_, _))
 
   def zipWith[B, R](that: IterableOnce[B])(f: (A, B) => R): Iterator[R] = new Iterator[R] {
     val thatIterator = that.iterator()

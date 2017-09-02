@@ -39,7 +39,7 @@ trait SortedSetOps[A, +CC[X] <: SortedSet[X], +C <: SortedSetOps[A, CC, C]]
 
   /** Zip. Interesting because it requires to align to source collections. */
   def zip[B](xs: Iterable[B])(implicit ev: Ordering[(A @uncheckedVariance, B)]): CC[(A @uncheckedVariance, B)] = // sound bcs of VarianceNote
-    sortedFromIterable(View.Zip(toIterable, xs))
+    zipWith(xs)((_, _))(ev)
 
   def zipWith[B, R](xs: Iterable[B])(f: (A, B) => R)(implicit ev: Ordering[R]): CC[R] =
     sortedFromIterable(View.ZipWith(toIterable, xs, f))

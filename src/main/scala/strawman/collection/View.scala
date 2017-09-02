@@ -183,14 +183,6 @@ object View extends IterableFactory[View] {
       else -1
   }
 
-  /** A view that zips elements of the underlying collection with the elements
-   *  of another collection or iterator.
-   */
-  case class Zip[A, B](underlying: Iterable[A], other: Iterable[B]) extends View[(A, B)] {
-    def iterator() = underlying.iterator().zip(other)
-    override def knownSize = underlying.knownSize min other.knownSize
-  }
-
   /** A view that generalizes the zip operation by applying a function to each pair of elements
     * in the underlying collection and another collection or iterator.
     */

@@ -835,7 +835,8 @@ trait IterableOps[+A, +CC[X], +C] extends Any {
     *                 corresponding elements of this $coll and `that`. The length
     *                 of the returned collection is the minimum of the lengths of this $coll and `that`.
     */
-  def zip[B](xs: Iterable[B]): CC[(A @uncheckedVariance, B)] = fromIterable(View.Zip(toIterable, xs))
+  def zip[B](xs: Iterable[B]): CC[(A @uncheckedVariance, B)] = zipWith(xs)((_, _))
+
   // sound bcs of VarianceNote
 
   /** Returns a $coll formed by the result of applying a function to each pair of corresponding elements

@@ -52,7 +52,7 @@ class ArrayOps[A](val xs: Array[A])
 
   def ++[B >: A : ClassTag](xs: Iterable[B]): Array[B] = fromTaggedIterable(View.Concat(toIterable, xs))
 
-  def zip[B: ClassTag](xs: Iterable[B]): Array[(A, B)] = fromTaggedIterable(View.Zip(toIterable, xs))
+  def zip[B: ClassTag](xs: Iterable[B]): Array[(A, B)] = zipWith(xs)((_, _))
 
   def zipWith[B, R: ClassTag](xs: Iterable[B])(f: (A, B) => R): Array[R] = fromTaggedIterable(View.ZipWith(toIterable, xs, f))
 }

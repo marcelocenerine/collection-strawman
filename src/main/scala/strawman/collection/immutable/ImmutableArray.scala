@@ -76,15 +76,7 @@ class ImmutableArray[+A] private[collection] (private val elements: scala.Array[
         ImmutableArray.fromIterable(View.Concat(xs, toIterable))
     }
 
-  override def zip[B](xs: collection.Iterable[B]): ImmutableArray[(A, B)] =
-    xs match {
-      case bs: ImmutableArray[B] =>
-        ImmutableArray.tabulate(length min bs.length) { i =>
-          (apply(i), bs(i))
-        }
-      case _ =>
-        ImmutableArray.fromIterable(View.Zip(toIterable, xs))
-    }
+  override def zip[B](xs: collection.Iterable[B]): ImmutableArray[(A, B)] = zipWith(xs)((_, _))
 
   override def zipWith[B, R](xs: collection.Iterable[B])(f: (A, B) => R): ImmutableArray[R] =
     xs match {
