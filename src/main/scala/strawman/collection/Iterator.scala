@@ -613,6 +613,12 @@ trait Iterator[+A] extends IterableOnce[A] { self =>
     def next() = (self.next(), thatIterator.next())
   }
 
+  def zipWith[B, R](that: IterableOnce[B])(f: (A, B) => R): Iterator[R] = new Iterator[R] {
+    val thatIterator = that.iterator()
+    def hasNext = self.hasNext && thatIterator.hasNext
+    def next() = f(self.next(), thatIterator.next())
+  }
+
   /** Creates an iterator that pairs each element produced by this iterator
     *  with its index, counting from 0.
     *

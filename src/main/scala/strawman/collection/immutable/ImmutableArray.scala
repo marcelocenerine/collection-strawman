@@ -86,6 +86,16 @@ class ImmutableArray[+A] private[collection] (private val elements: scala.Array[
         ImmutableArray.fromIterable(View.Zip(toIterable, xs))
     }
 
+  override def zipWith[B, R](xs: collection.Iterable[B])(f: (A, B) => R): ImmutableArray[R] =
+    xs match {
+      case bs: ImmutableArray[B] =>
+        ImmutableArray.tabulate(length min bs.length) { i =>
+          f(apply(i), bs(i))
+        }
+      case _ =>
+        ImmutableArray.fromIterable(View.ZipWith(toIterable, xs, f))
+    }
+
   override def partition(p: A => Boolean): (ImmutableArray[A], ImmutableArray[A]) = {
     val pn = View.Partition(toIterable, p)
     (ImmutableArray.fromIterable(pn.first), ImmutableArray.fromIterable(pn.second))
@@ -146,5 +156,4 @@ object ImmutableArray extends SeqFactory[ImmutableArray] {
     }
     new ImmutableArray(elements)
   }
-
 }

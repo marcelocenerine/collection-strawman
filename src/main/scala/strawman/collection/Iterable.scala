@@ -838,6 +838,20 @@ trait IterableOps[+A, +CC[X], +C] extends Any {
   def zip[B](xs: Iterable[B]): CC[(A @uncheckedVariance, B)] = fromIterable(View.Zip(toIterable, xs))
   // sound bcs of VarianceNote
 
+  /** Returns a $coll formed by the result of applying a function to each pair of corresponding elements
+    * from this $coll and another iterable collection. It is semantically equivalent to `(xs zip ys) map f`.
+    * If one of the two collections is longer than the other, its remaining elements are ignored.
+    *
+    *  @param   xs  The iterable providing the second half of each combined pair
+    *  @param   f   The function to apply to each pair of elements
+    *  @tparam  B     the type of the elements in the second half of the combined pairs
+    *  @tparam  R     the type of the elements in the resulting collection
+    *  @return        a new collection of type `That` containing the results of applying the given function `f`
+    *                 to each pair of corresponding elements of this $coll and `that`. The length
+    *                 of the returned collection is the minimum of the lengths of this $coll and `that`.
+    */
+  def zipWith[B, R](xs: Iterable[B])(f: (A, B) => R): CC[R] = fromIterable(View.ZipWith(toIterable, xs, f))
+
   /** Zips this $coll with its indices.
     *
     *  @return        A new collection of type `That` containing pairs consisting of all elements of this

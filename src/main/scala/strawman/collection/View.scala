@@ -191,6 +191,14 @@ object View extends IterableFactory[View] {
     override def knownSize = underlying.knownSize min other.knownSize
   }
 
+  /** A view that generalizes the zip operation by applying a function to each pair of elements
+    * in the underlying collection and another collection or iterator.
+    */
+  case class ZipWith[A, B, R](underlying: Iterable[A], other: Iterable[B], f: (A, B) => R) extends View[R] {
+    def iterator() = underlying.iterator().zipWith(other)(f)
+    override def knownSize = underlying.knownSize min other.knownSize
+  }
+
   /** A view that appends an element to its elements */
   case class Append[A](underlying: Iterable[A], elem: A) extends View[A] {
     def iterator(): Iterator[A] = Concat(underlying, View.Single(elem)).iterator()
