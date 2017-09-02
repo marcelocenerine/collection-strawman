@@ -227,4 +227,10 @@ class ScalaArrayBenchmark {
     val result = xs.groupBy(_ % 5)
     bh.consume(result)
   }
+
+  @Benchmark
+  def zip(bh: Blackhole): Unit = bh.consume(xs.zip(xs))
+
+  @Benchmark
+  def zipWithIndex(bh: Blackhole): Unit = bh.consume(xs.zipWithIndex)
 }

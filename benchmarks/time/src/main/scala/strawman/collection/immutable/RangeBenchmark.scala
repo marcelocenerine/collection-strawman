@@ -174,5 +174,11 @@ class RangeBenchmark {
   }
 
   @Benchmark
+  def zip(bh: Blackhole): Unit = bh.consume(xs.zip(xs))
+
+  @Benchmark
   def zipWith(bh: Blackhole): Unit = bh.consume(xs.zipWith(xs)(_ + _))
+
+  @Benchmark
+  def zipWithIndex(bh: Blackhole): Unit = bh.consume(xs.zipWithIndex)
 }
