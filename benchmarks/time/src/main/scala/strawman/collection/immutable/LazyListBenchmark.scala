@@ -225,4 +225,7 @@ class LazyListBenchmark {
     val result = xs.groupBy(_ % 5)
     bh.consume(result)
   }
+
+  @Benchmark
+  def zipWith(bh: Blackhole): Unit = bh.consume(xs.zipWith(xs)(_ + _))
 }
