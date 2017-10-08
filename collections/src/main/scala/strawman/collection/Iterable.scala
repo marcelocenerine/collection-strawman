@@ -879,6 +879,7 @@ trait IterableOps[+A, +CC[X], +C] extends Any {
     (fromIterable(unzipped.first), fromIterable(unzipped.second))
   }
 
+  def lazyZip[B](that: Iterable[B]): Tuple2Zipped[A, B] = new Tuple2Zipped(toIterable, that)
 }
 
 object Iterable extends IterableFactory.Delegate[Iterable](immutable.Iterable)
