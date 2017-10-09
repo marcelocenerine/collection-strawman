@@ -63,10 +63,26 @@ final class Tuple2Zipped[+A, +B] private[collection](as: Iterable[A], bs: Iterab
     while (ait.hasNext && bit.hasNext) f(ait.next(), bit.next())
   }
 
+  private def iterator(): Iterator[(A, B)] = new Iterator[(A, B)] {
+    val ait = as.iterator()
+    val bit = bs.iterator()
+
+    override def hasNext: Boolean = ait.hasNext && bit.hasNext
+    override def next(): (A, B) = (ait.next(), bit.next())
+  }
+
   def className = getClass.getName
 
   override def toString = s"$className($as, $bs)"
 }
+
+object Tuple2Zipped {
+  implicit def tuple2ZippedToIterable[A, B](zipped2: Tuple2Zipped[A, B]): Iterable[(A, B)] = new View[(A, B)] {
+    override def iterator(): Iterator[(A, B)] = zipped2.iterator()
+  }
+}
+
+
 
 final class Tuple3Zipped[+A, +B, +C] private[collection](as: Iterable[A], bs: Iterable[B], cs: Iterable[C]) {
 
@@ -141,10 +157,27 @@ final class Tuple3Zipped[+A, +B, +C] private[collection](as: Iterable[A], bs: It
       f(ait.next(), bit.next(), cit.next())
   }
 
+  private def iterator(): Iterator[(A, B, C)] = new Iterator[(A, B, C)] {
+    val ait = as.iterator()
+    val bit = bs.iterator()
+    val cit = cs.iterator()
+
+    override def hasNext: Boolean = ait.hasNext && bit.hasNext && cit.hasNext
+    override def next(): (A, B, C) = (ait.next(), bit.next(), cit.next())
+  }
+
   def className = getClass.getName
 
   override def toString = s"$className($as, $bs, $cs)"
 }
+
+object Tuple3Zipped {
+  implicit def tuple3ZippedToIterable[A, B, C](zipped3: Tuple3Zipped[A, B, C]): Iterable[(A, B, C)] = new View[(A, B, C)] {
+    override def iterator(): Iterator[(A, B, C)] = zipped3.iterator()
+  }
+}
+
+
 
 
 final class Tuple4Zipped[+A, +B, +C, +D] private[collection](as: Iterable[A], bs: Iterable[B], cs: Iterable[C], ds: Iterable[D]) {
@@ -226,7 +259,23 @@ final class Tuple4Zipped[+A, +B, +C, +D] private[collection](as: Iterable[A], bs
       f(ait.next(), bit.next(), cit.next(), dit.next())
   }
 
+  private def iterator(): Iterator[(A, B, C, D)] = new Iterator[(A, B, C, D)] {
+    val ait = as.iterator()
+    val bit = bs.iterator()
+    val cit = cs.iterator()
+    val dit = ds.iterator()
+
+    override def hasNext: Boolean = ait.hasNext && bit.hasNext && cit.hasNext && dit.hasNext
+    override def next(): (A, B, C, D) = (ait.next(), bit.next(), cit.next(), dit.next())
+  }
+
   def className = getClass.getName
 
   override def toString = s"$className($as, $bs, $cs, $ds)"
+}
+
+object Tuple4Zipped {
+  implicit def tuple4ZippedToIterable[A, B, C, D](zipped4: Tuple4Zipped[A, B, C, D]): Iterable[(A, B, C, D)] = new View[(A, B, C, D)] {
+    override def iterator(): Iterator[(A, B, C, D)] = zipped4.iterator()
+  }
 }

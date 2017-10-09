@@ -1,10 +1,12 @@
 package strawman.collection
 
 import org.junit.Assert._
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import org.junit.Test
 import strawman.collection.immutable.List
+
+import scala.language.implicitConversions
 
 @RunWith(classOf[JUnit4])
 class TupleZippedTest {
@@ -59,6 +61,13 @@ class TupleZippedTest {
   }
 
   @Test
+  def tuple2Zipped_toIterable(): Unit = {
+    val iter: Iterable[(Int, Int)] = zipped2
+
+    assertEquals(List((1, 1), (2, 2), (3, 3)), iter.to(List))
+  }
+
+  @Test
   def tuple3Zipped_map(): Unit = {
     val res = zipped3.map((a, b, c) => (a, b, c))
 
@@ -100,6 +109,13 @@ class TupleZippedTest {
   }
 
   @Test
+  def tuple3Zipped_toIterable(): Unit = {
+    val iter: Iterable[(Int, Int, String)] = zipped3
+
+    assertEquals(List((1, 1, "a"), (2, 2, "b"), (3, 3, "c")), iter.to(List))
+  }
+
+  @Test
   def tuple4Zipped_map(): Unit = {
     val res = zipped4.map((a, b, c, d) => (a, b, c, d))
 
@@ -138,5 +154,12 @@ class TupleZippedTest {
     zipped4.foreach((a, b, c, d) => res += s"[$a,$b,$c,$d]")
 
     assertEquals("[1,1,a,true][2,2,b,false][3,3,c,true]", res)
+  }
+
+  @Test
+  def tuple4Zipped_toIterable(): Unit = {
+    val iter: Iterable[(Int, Int, String, Boolean)] = zipped4
+
+    assertEquals(List((1, 1, "a", true), (2, 2, "b", false), (3, 3, "c", true)), iter.to(List))
   }
 }
