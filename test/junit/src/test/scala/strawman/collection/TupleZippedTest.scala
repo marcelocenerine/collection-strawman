@@ -21,21 +21,21 @@ class TupleZippedTest {
 
   @Test
   def tuple2Zipped_map(): Unit = {
-    val res = zipped2.map((a, b) => (a, b))
+    val res: List[(Int, Int)] = zipped2.map((a, b) => (a, b))
 
     assertEquals(List((1, 1), (2, 2), (3, 3)), res)
   }
 
   @Test
   def tuple2Zipped_flatMap(): Unit = {
-    val res = zipped2.flatMap((a, b) => List((a, b)))
+    val res: List[(Int, Int)] = zipped2.flatMap((a, b) => List((a, b)))
 
     assertEquals(List((1, 1), (2, 2), (3, 3)), res)
   }
 
   @Test
   def tuple2Zipped_filter(): Unit = {
-    val res = zipped2.filter((a, _) => a % 2 == 0)
+    val res: (List[Int], List[Int]) = zipped2.filter((a, _) => a % 2 == 0)
 
     assertEquals((List(2), List(2)), res)
   }
@@ -69,21 +69,21 @@ class TupleZippedTest {
 
   @Test
   def tuple3Zipped_map(): Unit = {
-    val res = zipped3.map((a, b, c) => (a, b, c))
+    val res: List[(Int, Int, String)] = zipped3.map((a, b, c) => (a, b, c))
 
     assertEquals(List((1, 1, "a"), (2, 2, "b"), (3, 3, "c")), res)
   }
 
   @Test
   def tuple3Zipped_flatMap(): Unit = {
-    val res = zipped3.flatMap((a, b, c) => List((a, b, c)))
+    val res: List[(Int, Int, String)] = zipped3.flatMap((a, b, c) => List((a, b, c)))
 
     assertEquals(List((1, 1, "a"), (2, 2, "b"), (3, 3, "c")), res)
   }
 
   @Test
   def tuple3Zipped_filter(): Unit = {
-    val res = zipped3.filter((a, _, _) => a % 2 != 0)
+    val res: (List[Int], List[Int], List[String]) = zipped3.filter((a, _, _) => a % 2 != 0)
 
     assertEquals((List(1, 3), List(1, 3), List("a", "c")), res)
   }
@@ -117,21 +117,21 @@ class TupleZippedTest {
 
   @Test
   def tuple4Zipped_map(): Unit = {
-    val res = zipped4.map((a, b, c, d) => (a, b, c, d))
+    val res: List[(Int, Int, String, Boolean)] = zipped4.map((a, b, c, d) => (a, b, c, d))
 
     assertEquals(List((1, 1, "a", true), (2, 2, "b", false), (3, 3, "c", true)), res)
   }
 
   @Test
   def tuple4Zipped_flatMap(): Unit = {
-    val res = zipped4.flatMap((a, b, c, d) => List((a, b, c, d)))
+    val res: List[(Int, Int, String, Boolean)] = zipped4.flatMap((a, b, c, d) => List((a, b, c, d)))
 
     assertEquals(List((1, 1, "a", true), (2, 2, "b", false), (3, 3, "c", true)), res)
   }
 
   @Test
   def tuple4Zipped_filter(): Unit = {
-    val res = zipped4.filter((_, _, _, d) => d)
+    val res: (List[Int], List[Int], List[String], List[Boolean]) = zipped4.filter((_, _, _, d) => d)
 
     assertEquals((List(1, 3), List(1, 3), List("a", "c"), List(true, true)), res)
   }
