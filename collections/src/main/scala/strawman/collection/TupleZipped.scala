@@ -10,41 +10,51 @@ final class Tuple2Zipped[El1, +C1, El2, +C2] private[collection](coll1: C1, coll
     new Tuple3Zipped(coll1, coll2, that)
 
   def map[B, C](f: (El1, El2) => B)(implicit bf: BuildFrom[C1, B, C]): C = {
-    val b = bf.newBuilder(coll1)
-    val elems1 = coll1.iterator()
-    val elems2 = coll2.iterator()
-
-    while (elems1.hasNext && elems2.hasNext) b += f(elems1.next(), elems2.next())
-
-    b.result()
+    bf.fromSpecificIterable(coll1)(new View[B] {
+      def iterator() = new Iterator[B] {
+        private val elems1 = coll1.iterator()
+        private val elems2 = coll2.iterator()
+        def hasNext = elems1.hasNext && elems2.hasNext
+        def next() = f(elems1.next(), elems2.next())
+      }
+    })
   }
 
   def flatMap[B, C](f: (El1, El2) => Iterable[B])(implicit bf: BuildFrom[C1, B, C]): C = {
-    val b = bf.newBuilder(coll1)
-    val elems1 = coll1.iterator()
-    val elems2 = coll2.iterator()
+    bf.fromSpecificIterable(coll1)(new View[B] {
+      def iterator() = new Iterator[B] {
+        private val elems1 = coll1.iterator()
+        private val elems2 = coll2.iterator()
+        private var myCurrent: Iterator[B] = Iterator.empty
+        private def current = {
+          while (!myCurrent.hasNext && elems1.hasNext && elems2.hasNext)
+            myCurrent = f(elems1.next(), elems2.next()).iterator()
+          myCurrent
+        }
 
-    while (elems1.hasNext && elems2.hasNext) b ++= f(elems1.next(), elems2.next())
-
-    b.result()
+        def hasNext = current.hasNext
+        def next() = current.next()
+      }
+    })
   }
 
   def filter[C, D](p: (El1, El2) => Boolean)(implicit bf1: BuildFrom[C1, El1, C], bf2: BuildFrom[C2, El2, D]): (C, D) = {
-    val b1 = bf1.newBuilder(coll1)
-    val b2 = bf2.newBuilder(coll2)
-    val elems1 = coll1.iterator()
-    val elems2 = coll2.iterator()
-
-    while (elems1.hasNext && elems2.hasNext) {
-      val el1 = elems1.next()
-      val el2 = elems2.next()
-      if (p(el1, el2)) {
-        b1 += el1
-        b2 += el2
+    val res1 = bf1.fromSpecificIterable(coll1)(new View[El1] {
+      def iterator() = {
+        val it1 = coll1.iterator()
+        val it2 = coll2.iterator()
+        it1.filter(e => it2.hasNext && p(e, it2.next()))
       }
-    }
+    })
+    val res2 = bf2.fromSpecificIterable(coll2)(new View[El2] {
+      def iterator() = {
+        val it1 = coll1.iterator()
+        val it2 = coll2.iterator()
+        it2.filter(e => it1.hasNext && p(it1.next(), e))
+      }
+    })
 
-    (b1.result(), b2.result())
+    (res1, res2)
   }
 
   def exists(p: (El1, El2) => Boolean): Boolean = {
@@ -66,12 +76,11 @@ final class Tuple2Zipped[El1, +C1, El2, +C2] private[collection](coll1: C1, coll
     while (elems1.hasNext && elems2.hasNext) f(elems1.next(), elems2.next())
   }
 
-  private def iterator(): Iterator[(El1, El2)] = new Iterator[(El1, El2)] {
+  private def iterator() = new Iterator[(El1, El2)] {
     private val elems1 = coll1.iterator()
     private val elems2 = coll2.iterator()
-
-    override def hasNext: Boolean = elems1.hasNext && elems2.hasNext
-    override def next(): (El1, El2) = (elems1.next(), elems2.next())
+    def hasNext = elems1.hasNext && elems2.hasNext
+    def next() = (elems1.next(), elems2.next())
   }
 
   def className = getClass.getName
@@ -82,7 +91,7 @@ final class Tuple2Zipped[El1, +C1, El2, +C2] private[collection](coll1: C1, coll
 object Tuple2Zipped {
   implicit def tuple2ZippedToIterable[El1, C1, El2, C2](zipped2: Tuple2Zipped[El1, C1, El2, C2]): Iterable[(El1, El2)] =
     new View[(El1, El2)] {
-      override def iterator(): Iterator[(El1, El2)] = zipped2.iterator()
+      def iterator() = zipped2.iterator()
     }
 }
 
@@ -96,51 +105,65 @@ final class Tuple3Zipped[El1, +C1, El2, +C2, El3, +C3] private[collection](coll1
     new Tuple4Zipped(coll1, coll2, coll3, that)
 
   def map[B, C](f: (El1, El2, El3) => B)(implicit bf: BuildFrom[C1, B, C]): C = {
-    val b = bf.newBuilder(coll1)
-    val elems1 = coll1.iterator()
-    val elems2 = coll2.iterator()
-    val elems3 = coll3.iterator()
-
-    while (elems1.hasNext && elems2.hasNext && elems3.hasNext)
-      b += f(elems1.next(), elems2.next(), elems3.next())
-
-    b.result()
+    bf.fromSpecificIterable(coll1)(new View[B] {
+      def iterator() = new Iterator[B] {
+        private val elems1 = coll1.iterator()
+        private val elems2 = coll2.iterator()
+        private val elems3 = coll3.iterator()
+        def hasNext = elems1.hasNext && elems2.hasNext && elems3.hasNext
+        def next() = f(elems1.next(), elems2.next(), elems3.next())
+      }
+    })
   }
 
   def flatMap[B, C](f: (El1, El2, El3) => Iterable[B])(implicit bf: BuildFrom[C1, B, C]): C = {
-    val b = bf.newBuilder(coll1)
-    val elems1 = coll1.iterator()
-    val elems2 = coll2.iterator()
-    val elems3 = coll3.iterator()
+    bf.fromSpecificIterable(coll1)(new View[B] {
+      def iterator() = new Iterator[B] {
+        private val elems1 = coll1.iterator()
+        private val elems2 = coll2.iterator()
+        private val elems3 = coll3.iterator()
+        private var myCurrent: Iterator[B] = Iterator.empty
+        private def current = {
+          while (!myCurrent.hasNext && elems1.hasNext && elems2.hasNext && elems3.hasNext)
+            myCurrent = f(elems1.next(), elems2.next(), elems3.next()).iterator()
+          myCurrent
+        }
 
-    while (elems1.hasNext && elems2.hasNext && elems3.hasNext)
-      b ++= f(elems1.next(), elems2.next(), elems3.next())
-
-    b.result()
+        def hasNext = current.hasNext
+        def next() = current.next()
+      }
+    })
   }
 
   def filter[C, D, E](p: (El1, El2, El3) => Boolean)(implicit bf1: BuildFrom[C1, El1, C],
                                                               bf2: BuildFrom[C2, El2, D],
                                                               bf3: BuildFrom[C3, El3, E]): (C, D, E) = {
-    val b1 = bf1.newBuilder(coll1)
-    val b2 = bf2.newBuilder(coll2)
-    val b3 = bf3.newBuilder(coll3)
-    val elems1 = coll1.iterator()
-    val elems2 = coll2.iterator()
-    val elems3 = coll3.iterator()
-
-    while (elems1.hasNext && elems2.hasNext && elems3.hasNext) {
-      val el1 = elems1.next()
-      val el2 = elems2.next()
-      val el3 = elems3.next()
-      if (p(el1, el2, el3)) {
-        b1 += el1
-        b2 += el2
-        b3 += el3
+    val res1 = bf1.fromSpecificIterable(coll1)(new View[El1] {
+      def iterator() = {
+        val it1 = coll1.iterator()
+        val it2 = coll2.iterator()
+        val it3 = coll3.iterator()
+        it1.filter(e => it2.hasNext && it3.hasNext && p(e, it2.next(), it3.next()))
       }
-    }
+    })
+    val res2 = bf2.fromSpecificIterable(coll2)(new View[El2] {
+      def iterator() = {
+        val it1 = coll1.iterator()
+        val it2 = coll2.iterator()
+        val it3 = coll3.iterator()
+        it2.filter(e => it1.hasNext && it3.hasNext && p(it1.next(), e, it3.next()))
+      }
+    })
+    val res3 = bf3.fromSpecificIterable(coll3)(new View[El3] {
+      def iterator() = {
+        val it1 = coll1.iterator()
+        val it2 = coll2.iterator()
+        val it3 = coll3.iterator()
+        it3.filter(e => it1.hasNext && it2.hasNext && p(it1.next(), it2.next(), e))
+      }
+    })
 
-    (b1.result(), b2.result(), b3.result())
+    (res1, res2, res3)
   }
 
   def exists(p: (El1, El2, El3) => Boolean): Boolean = {
@@ -166,13 +189,12 @@ final class Tuple3Zipped[El1, +C1, El2, +C2, El3, +C3] private[collection](coll1
       f(elems1.next(), elems2.next(), elems3.next())
   }
 
-  private def iterator(): Iterator[(El1, El2, El3)] = new Iterator[(El1, El2, El3)] {
+  private def iterator() = new Iterator[(El1, El2, El3)] {
     private val elems1 = coll1.iterator()
     private val elems2 = coll2.iterator()
     private val elems3 = coll3.iterator()
-
-    override def hasNext: Boolean = elems1.hasNext && elems2.hasNext && elems3.hasNext
-    override def next(): (El1, El2, El3) = (elems1.next(), elems2.next(), elems3.next())
+    def hasNext = elems1.hasNext && elems2.hasNext && elems3.hasNext
+    def next() = (elems1.next(), elems2.next(), elems3.next())
   }
 
   def className = getClass.getName
@@ -184,7 +206,7 @@ object Tuple3Zipped {
   implicit def tuple3ZippedToIterable[El1, C1, El2, C2, El3, C3]
     (zipped3: Tuple3Zipped[El1, C1, El2, C2, El3, C3]): Iterable[(El1, El2, El3)] =
     new View[(El1, El2, El3)] {
-      override def iterator(): Iterator[(El1, El2, El3)] = zipped3.iterator()
+      def iterator() = zipped3.iterator()
     }
 }
 
@@ -198,58 +220,80 @@ final class Tuple4Zipped[El1, +C1, El2, +C2, El3, +C3, El4, +C4] private[collect
                                                                                               v4: C4 => Iterable[El4]) {
 
   def map[B, C](f: (El1, El2, El3, El4) => B)(implicit bf: BuildFrom[C1, B, C]): C = {
-    val b = bf.newBuilder(coll1)
-    val elems1 = coll1.iterator()
-    val elems2 = coll2.iterator()
-    val elems3 = coll3.iterator()
-    val elems4 = coll4.iterator()
-
-    while (elems1.hasNext && elems2.hasNext && elems3.hasNext && elems4.hasNext)
-      b += f(elems1.next(), elems2.next(), elems3.next(), elems4.next())
-
-    b.result()
+    bf.fromSpecificIterable(coll1)(new View[B] {
+      def iterator() = new Iterator[B] {
+        private val elems1 = coll1.iterator()
+        private val elems2 = coll2.iterator()
+        private val elems3 = coll3.iterator()
+        private val elems4 = coll4.iterator()
+        def hasNext = elems1.hasNext && elems2.hasNext && elems3.hasNext && elems4.hasNext
+        def next() = f(elems1.next(), elems2.next(), elems3.next(), elems4.next())
+      }
+    })
   }
 
   def flatMap[B, C](f: (El1, El2, El3, El4) => Iterable[B])(implicit bf: BuildFrom[C1, B, C]): C = {
-    val b = bf.newBuilder(coll1)
-    val elems1 = coll1.iterator()
-    val elems2 = coll2.iterator()
-    val elems3 = coll3.iterator()
-    val elems4 = coll4.iterator()
+    bf.fromSpecificIterable(coll1)(new View[B] {
+      def iterator() = new Iterator[B] {
+        private val elems1 = coll1.iterator()
+        private val elems2 = coll2.iterator()
+        private val elems3 = coll3.iterator()
+        private val elems4 = coll4.iterator()
+        private var myCurrent: Iterator[B] = Iterator.empty
+        private def current = {
+          while (!myCurrent.hasNext && elems1.hasNext && elems2.hasNext && elems3.hasNext && elems4.hasNext)
+            myCurrent = f(elems1.next(), elems2.next(), elems3.next(), elems4.next()).iterator()
+          myCurrent
+        }
 
-    while (elems1.hasNext && elems2.hasNext && elems3.hasNext && elems4.hasNext)
-      b ++= f(elems1.next(), elems2.next(), elems3.next(), elems4.next())
-
-    b.result()
+        def hasNext = current.hasNext
+        def next() = current.next()
+      }
+    })
   }
 
   def filter[C, D, E, F](p: (El1, El2, El3, El4) => Boolean)(implicit bf1: BuildFrom[C1, El1, C],
                                                                       bf2: BuildFrom[C2, El2, D],
                                                                       bf3: BuildFrom[C3, El3, E],
                                                                       bf4: BuildFrom[C4, El4, F]): (C, D, E, F) = {
-    val b1 = bf1.newBuilder(coll1)
-    val b2 = bf2.newBuilder(coll2)
-    val b3 = bf3.newBuilder(coll3)
-    val b4 = bf4.newBuilder(coll4)
-    val elems1 = coll1.iterator()
-    val elems2 = coll2.iterator()
-    val elems3 = coll3.iterator()
-    val elems4 = coll4.iterator()
-
-    while (elems1.hasNext && elems2.hasNext && elems3.hasNext && elems4.hasNext) {
-      val el1 = elems1.next()
-      val el2 = elems2.next()
-      val el3 = elems3.next()
-      val el4 = elems4.next()
-      if (p(el1, el2, el3, el4)) {
-        b1 += el1
-        b2 += el2
-        b3 += el3
-        b4 += el4
+    val res1 = bf1.fromSpecificIterable(coll1)(new View[El1] {
+      def iterator() = {
+        val it1 = coll1.iterator()
+        val it2 = coll2.iterator()
+        val it3 = coll3.iterator()
+        val it4 = coll4.iterator()
+        it1.filter(e => it2.hasNext && it3.hasNext && it4.hasNext && p(e, it2.next(), it3.next(), it4.next()))
       }
-    }
+    })
+    val res2 = bf2.fromSpecificIterable(coll2)(new View[El2] {
+      def iterator() = {
+        val it1 = coll1.iterator()
+        val it2 = coll2.iterator()
+        val it3 = coll3.iterator()
+        val it4 = coll4.iterator()
+        it2.filter(e => it1.hasNext && it3.hasNext && it4.hasNext && p(it1.next(), e, it3.next(), it4.next()))
+      }
+    })
+    val res3 = bf3.fromSpecificIterable(coll3)(new View[El3] {
+      def iterator() = {
+        val it1 = coll1.iterator()
+        val it2 = coll2.iterator()
+        val it3 = coll3.iterator()
+        val it4 = coll4.iterator()
+        it3.filter(e => it1.hasNext && it2.hasNext && it4.hasNext && p(it1.next(), it2.next(), e, it4.next()))
+      }
+    })
+    val res4 = bf4.fromSpecificIterable(coll4)(new View[El4] {
+      def iterator() = {
+        val it1 = coll1.iterator()
+        val it2 = coll2.iterator()
+        val it3 = coll3.iterator()
+        val it4 = coll4.iterator()
+        it4.filter(e => it1.hasNext && it2.hasNext && it3.hasNext && p(it1.next(), it2.next(), it3.next(), e))
+      }
+    })
 
-    (b1.result(), b2.result(), b3.result(), b4.result())
+    (res1, res2, res3, res4)
   }
 
   def exists(p: (El1, El2, El3, El4) => Boolean): Boolean = {
@@ -282,9 +326,8 @@ final class Tuple4Zipped[El1, +C1, El2, +C2, El3, +C3, El4, +C4] private[collect
     private val elems2 = coll2.iterator()
     private val elems3 = coll3.iterator()
     private val elems4 = coll4.iterator()
-
-    override def hasNext: Boolean = elems1.hasNext && elems2.hasNext && elems3.hasNext && elems4.hasNext
-    override def next(): (El1, El2, El3, El4) = (elems1.next(), elems2.next(), elems3.next(), elems4.next())
+    def hasNext = elems1.hasNext && elems2.hasNext && elems3.hasNext && elems4.hasNext
+    def next() = (elems1.next(), elems2.next(), elems3.next(), elems4.next())
   }
 
   def className = getClass.getName
@@ -296,6 +339,6 @@ object Tuple4Zipped {
   implicit def tuple4ZippedToIterable[El1, C1, El2, C2, El3, C3, El4, C4]
     (zipped4: Tuple4Zipped[El1, C1, El2, C2, El3, C3, El4, C4]): Iterable[(El1, El2, El3, El4)] =
     new View[(El1, El2, El3, El4)] {
-      override def iterator(): Iterator[(El1, El2, El3, El4)] = zipped4.iterator()
+      def iterator() = zipped4.iterator()
     }
 }
