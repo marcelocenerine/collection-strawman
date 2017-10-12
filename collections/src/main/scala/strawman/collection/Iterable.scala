@@ -879,9 +879,8 @@ trait IterableOps[+A, +CC[X], +C] extends Any {
     (fromIterable(unzipped.first), fromIterable(unzipped.second))
   }
 
-  def lazyZip[B, C2](that: C2)(implicit v1: C  => Iterable[A @uncheckedVariance],
-                                        v2: C2 => Iterable[B]): Tuple2Zipped[A @uncheckedVariance, C, B, C2] =
-    new Tuple2Zipped(coll, that)
+  def lazyZip[B, C1[X] <: Iterable[X]](that: C1[B])(implicit v1: C => C1[A @uncheckedVariance])
+    : Tuple2Zipped[A @uncheckedVariance, C1[A @uncheckedVariance], B, C1[B]] = new Tuple2Zipped(coll, that)
 }
 
 object Iterable extends IterableFactory.Delegate[Iterable](immutable.Iterable)

@@ -3,11 +3,9 @@ package strawman.collection
 import scala.{Boolean, StringContext, Unit}
 import scala.language.implicitConversions
 
-final class Tuple2Zipped[El1, +C1, El2, +C2] private[collection](coll1: C1, coll2: C2)(implicit v1: C1 => Iterable[El1],
-                                                                                                v2: C2 => Iterable[El2]) {
+final class Tuple2Zipped[El1, C1 <: Iterable[El1], El2, C2 <: Iterable[El2]] private[collection](coll1: C1, coll2: C2) {
 
-  def lazyZip[B, C3](that: C3)(implicit v3: C3 => Iterable[B]): Tuple3Zipped[El1, C1, El2, C2, B, C3] =
-    new Tuple3Zipped(coll1, coll2, that)
+  def lazyZip[B, C3[X] <: Iterable[X]](that: C3[B]): Tuple3Zipped[El1, C1, El2, C2, B, C3[B]] = new Tuple3Zipped(coll1, coll2, that)
 
   def map[B, C](f: (El1, El2) => B)(implicit bf: BuildFrom[C1, B, C]): C = {
     bf.fromSpecificIterable(coll1)(new View[B] {
@@ -89,20 +87,19 @@ final class Tuple2Zipped[El1, +C1, El2, +C2] private[collection](coll1: C1, coll
 }
 
 object Tuple2Zipped {
-  implicit def tuple2ZippedToIterable[El1, C1, El2, C2](zipped2: Tuple2Zipped[El1, C1, El2, C2]): Iterable[(El1, El2)] =
+  implicit def tuple2ZippedToIterable[El1, C1 <: Iterable[El1],
+                                      El2, C2 <: Iterable[El2]](zipped2: Tuple2Zipped[El1, C1, El2, C2]): Iterable[(El1, El2)] =
     new View[(El1, El2)] {
       def iterator() = zipped2.iterator()
     }
 }
 
 
-final class Tuple3Zipped[El1, +C1, El2, +C2, El3, +C3] private[collection](coll1: C1, coll2: C2, coll3: C3)
-                                                                          (implicit v1: C1 => Iterable[El1],
-                                                                                    v2: C2 => Iterable[El2],
-                                                                                    v3: C3 => Iterable[El3]) {
+final class Tuple3Zipped[El1, C1 <: Iterable[El1],
+                         El2, C2 <: Iterable[El2],
+                         El3, C3 <: Iterable[El3]] private[collection](coll1: C1, coll2: C2, coll3: C3) {
 
-  def lazyZip[B, C4](that: C4)(implicit v4: C4 => Iterable[B]): Tuple4Zipped[El1, C1, El2, C2, El3, C3, B, C4] =
-    new Tuple4Zipped(coll1, coll2, coll3, that)
+  def lazyZip[B, C4[X] <: Iterable[X]](that: C4[B]): Tuple4Zipped[El1, C1, El2, C2, El3, C3, B, C4[B]] = new Tuple4Zipped(coll1, coll2, coll3, that)
 
   def map[B, C](f: (El1, El2, El3) => B)(implicit bf: BuildFrom[C1, B, C]): C = {
     bf.fromSpecificIterable(coll1)(new View[B] {
@@ -203,8 +200,9 @@ final class Tuple3Zipped[El1, +C1, El2, +C2, El3, +C3] private[collection](coll1
 }
 
 object Tuple3Zipped {
-  implicit def tuple3ZippedToIterable[El1, C1, El2, C2, El3, C3]
-    (zipped3: Tuple3Zipped[El1, C1, El2, C2, El3, C3]): Iterable[(El1, El2, El3)] =
+  implicit def tuple3ZippedToIterable[El1, C1 <: Iterable[El1],
+                                      El2, C2 <: Iterable[El2],
+                                      El3, C3 <: Iterable[El3]](zipped3: Tuple3Zipped[El1, C1, El2, C2, El3, C3]): Iterable[(El1, El2, El3)] =
     new View[(El1, El2, El3)] {
       def iterator() = zipped3.iterator()
     }
@@ -213,11 +211,10 @@ object Tuple3Zipped {
 
 
 
-final class Tuple4Zipped[El1, +C1, El2, +C2, El3, +C3, El4, +C4] private[collection](coll1: C1, coll2: C2, coll3: C3, coll4: C4)
-                                                                                    (implicit v1: C1 => Iterable[El1],
-                                                                                              v2: C2 => Iterable[El2],
-                                                                                              v3: C3 => Iterable[El3],
-                                                                                              v4: C4 => Iterable[El4]) {
+final class Tuple4Zipped[El1, C1 <: Iterable[El1],
+                         El2, C2 <: Iterable[El2],
+                         El3, C3 <: Iterable[El3],
+                         El4, C4 <: Iterable[El4]] private[collection](coll1: C1, coll2: C2, coll3: C3, coll4: C4) {
 
   def map[B, C](f: (El1, El2, El3, El4) => B)(implicit bf: BuildFrom[C1, B, C]): C = {
     bf.fromSpecificIterable(coll1)(new View[B] {
@@ -321,7 +318,7 @@ final class Tuple4Zipped[El1, +C1, El2, +C2, El3, +C3, El4, +C4] private[collect
       f(elems1.next(), elems2.next(), elems3.next(), elems4.next())
   }
 
-  private def iterator(): Iterator[(El1, El2, El3, El4)] = new Iterator[(El1, El2, El3, El4)] {
+  private def iterator() = new Iterator[(El1, El2, El3, El4)] {
     private val elems1 = coll1.iterator()
     private val elems2 = coll2.iterator()
     private val elems3 = coll3.iterator()
@@ -336,8 +333,10 @@ final class Tuple4Zipped[El1, +C1, El2, +C2, El3, +C3, El4, +C4] private[collect
 }
 
 object Tuple4Zipped {
-  implicit def tuple4ZippedToIterable[El1, C1, El2, C2, El3, C3, El4, C4]
-    (zipped4: Tuple4Zipped[El1, C1, El2, C2, El3, C3, El4, C4]): Iterable[(El1, El2, El3, El4)] =
+  implicit def tuple4ZippedToIterable[El1, C1 <: Iterable[El1],
+                                      El2, C2 <: Iterable[El2],
+                                      El3, C3 <: Iterable[El3],
+                                      El4, C4 <: Iterable[El4]](zipped4: Tuple4Zipped[El1, C1, El2, C2, El3, C3, El4, C4]): Iterable[(El1, El2, El3, El4)] =
     new View[(El1, El2, El3, El4)] {
       def iterator() = zipped4.iterator()
     }
