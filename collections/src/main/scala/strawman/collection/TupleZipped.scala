@@ -3,8 +3,18 @@ package strawman.collection
 import scala.{Boolean, StringContext, Unit}
 import scala.language.implicitConversions
 
+/** Decorator representing lazily zipped tuples of arity 2. */
 final class Tuple2Zipped[El1, C1 <: Iterable[El1], El2, C2 <: Iterable[El2]] private[collection](coll1: C1, coll2: C2) {
 
+  /** Zips `that` iterable collection with an already lazily zipped `Tuple2Zipped`. The elements in each collection are
+    * not consumed until a strict operation is invoked on the returned `Tuple3Zipped` decorator.
+    *
+    * @param that the iterable providing the third element of each eventual tuple
+    * @tparam B the type of the third element in each eventual tuple
+    * @tparam C3 the type of `that` iterable
+    * @return a decorator `Tuple3Zipped` that allows strict operations to be performed on the lazily evaluated tuples or
+    *         chained calls to `lazyZip`. Implicit conversion to `Iterable[(El1, El2, B)]` is also supported.
+    */
   def lazyZip[B, C3[X] <: Iterable[X]](that: C3[B]): Tuple3Zipped[El1, C1, El2, C2, B, C3[B]] = new Tuple3Zipped(coll1, coll2, that)
 
   def map[B, C](f: (El1, El2) => B)(implicit bf: BuildFrom[C1, B, C]): C = {
@@ -100,10 +110,20 @@ object Tuple2Zipped {
 }
 
 
+/** Decorator representing lazily zipped tuples of arity 3. */
 final class Tuple3Zipped[El1, C1 <: Iterable[El1],
                          El2, C2 <: Iterable[El2],
                          El3, C3 <: Iterable[El3]] private[collection](coll1: C1, coll2: C2, coll3: C3) {
 
+  /** Zips `that` iterable collection with an already lazily zipped `Tuple3Zipped`. The elements in each collection are
+    * not consumed until a strict operation is invoked on the returned `Tuple4Zipped` decorator.
+    *
+    * @param that the iterable providing the forth element of each eventual tuple
+    * @tparam B the type of the forth element in each eventual tuple
+    * @tparam C4 the type of `that` iterable
+    * @return a decorator `Tuple4Zipped` that allows strict operations to be performed on the lazily evaluated tuples.
+    *         Implicit conversion to `Iterable[(El1, El2, El3, B)]` is also supported.
+    */
   def lazyZip[B, C4[X] <: Iterable[X]](that: C4[B]): Tuple4Zipped[El1, C1, El2, C2, El3, C3, B, C4[B]] = new Tuple4Zipped(coll1, coll2, coll3, that)
 
   def map[B, C](f: (El1, El2, El3) => B)(implicit bf: BuildFrom[C1, B, C]): C = {
@@ -210,7 +230,7 @@ object Tuple3Zipped {
 
 
 
-
+/** Decorator representing lazily zipped tuples of arity 4. */
 final class Tuple4Zipped[El1, C1 <: Iterable[El1],
                          El2, C2 <: Iterable[El2],
                          El3, C3 <: Iterable[El3],

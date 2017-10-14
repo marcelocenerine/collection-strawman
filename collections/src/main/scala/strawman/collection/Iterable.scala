@@ -837,19 +837,18 @@ trait IterableOps[+A, +CC[X], +C] extends Any {
     *  by combining corresponding elements in pairs.
     *  If one of the two collections is longer than the other, its remaining elements are ignored.
     *
-    *  @param   xs  The iterable providing the second half of each result pair
+    *  @param   that  The iterable providing the second half of each result pair
     *  @tparam  B     the type of the second half of the returned pairs
-    *  @return        a new collection of type `That` containing pairs consisting of
-    *                 corresponding elements of this $coll and `that`. The length
-    *                 of the returned collection is the minimum of the lengths of this $coll and `that`.
+    *  @return        a new $coll containing pairs consisting of corresponding elements of this $coll and `that`.
+    *                 The length of the returned collection is the minimum of the lengths of this $coll and `that`.
     */
-  def zip[B](xs: Iterable[B]): CC[(A @uncheckedVariance, B)] = fromIterable(View.Zip(toIterable, xs))
+  def zip[B](that: Iterable[B]): CC[(A @uncheckedVariance, B)] = fromIterable(View.Zip(toIterable, that))
   // sound bcs of VarianceNote
 
   /** Zips this $coll with its indices.
     *
-    *  @return        A new collection of type `That` containing pairs consisting of all elements of this
-    *                 $coll paired with their index. Indices start at `0`.
+    *  @return        A new $coll containing pairs consisting of all elements of this $coll paired with their index.
+    *                 Indices start at `0`.
     *  @example
     *    `List("a", "b", "c").zipWithIndex == List(("a", 0), ("b", 1), ("c", 2))`
     */
@@ -883,6 +882,25 @@ trait IterableOps[+A, +CC[X], +C] extends Any {
 object Iterable extends IterableFactory.Delegate[Iterable](immutable.Iterable) {
 
   implicit class LazyZipOps[A, C1[X] <: Iterable[X]](`this`: C1[A]) {
+
+    /** Analogous to `zip` except that the elements in each collection are not consumed until a strict operation is
+      * invoked on the returned `Tuple2Zipped` decorator.
+      *
+      * Calls to `lazyZip` can be chained to support higher arities (up to 4) without incurring the expense of
+      * constructing and deconstructing intermediary tuples.
+      *
+      *    {{{
+      *    val xs = $Coll(1, 2, 3)
+      *    val res = (xs lazyZip xs lazyZip xs lazyZip xs).map((a, b, c, d) => a + b + c + d)
+      *    // res == $Col(4, 8, 12)
+      *    }}}
+      *
+      * @param that the iterable providing the second half of each eventual pair
+      * @tparam B the type of the element in the second half of each eventual pair
+      * @tparam C2 the type of `that` iterable
+      * @return a decorator `Tuple2Zipped` that allows strict operations to be performed on the lazily evaluated pairs
+      *         or chained calls to `lazyZip`. Implicit conversion to `Iterable[(A, B)]` is also supported.
+      */
     def lazyZip[B, C2[X] <: Iterable[X]](that: C2[B]): Tuple2Zipped[A, C1[A], B, C2[B]] = new Tuple2Zipped(`this`, that)
   }
 }
