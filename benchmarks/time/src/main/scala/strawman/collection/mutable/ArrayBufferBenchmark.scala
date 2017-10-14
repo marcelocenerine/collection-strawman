@@ -274,6 +274,15 @@ class ArrayBufferBenchmark {
   }
 
   @Benchmark
+  def transform_zip(bh: Blackhole): Unit = bh.consume(xs.zip(xs))
+
+  @Benchmark
+  def transform_zipWithIndex(bh: Blackhole): Unit = bh.consume(xs.zipWithIndex)
+
+  @Benchmark
+  def transform_lazyZip(bh: Blackhole): Unit = bh.consume(xs.lazyZip(xs).map((_, _)))
+
+  @Benchmark
   def transform_unzip(bh: Blackhole): Unit = bh.consume(zipped.unzip)
 
   @Benchmark

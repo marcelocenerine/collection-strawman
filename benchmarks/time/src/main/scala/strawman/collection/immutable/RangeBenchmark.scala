@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
+import strawman.collection.Tuple2Zipped
 
 import scala.{Any, AnyRef, Int, Long, Unit, math}
 import scala.Predef.intWrapper
@@ -21,12 +22,14 @@ class RangeBenchmark {
   var xs: Range = _
   var zs: Range = _
   var randomIndices: scala.Array[Int] = _
+  var zipped: IndexedSeq[(Long, Long)] = _
   def fresh(n: Int) = Range.inclusive(1, n, 1)
 
   @Setup(Level.Trial)
   def initTrial(): Unit = {
     xs = fresh(size)
     zs = Range.inclusive(-1, (-size / 1000) min -2, -1)
+    zipped = xs.map(x => (x, x))
     if (size > 0) {
       randomIndices = scala.Array.fill(1000)(scala.util.Random.nextInt(size))
     }
@@ -176,4 +179,19 @@ class RangeBenchmark {
     val result = xs.groupBy(_ % 5)
     bh.consume(result)
   }
+
+  @Benchmark
+  def transform_zip(bh: Blackhole): Unit = bh.consume(xs.zip(xs))
+
+  @Benchmark
+  def transform_zipWithIndex(bh: Blackhole): Unit = bh.consume(xs.zipWithIndex)
+
+  @Benchmark
+  def transform_lazyZip(bh: Blackhole): Unit = {
+    val xs1: IndexedSeq[Int] = xs
+    bh.consume(xs1.lazyZip(xs1).map((_, _)))
+  }
+
+  @Benchmark
+  def transform_unzip(bh: Blackhole): Unit = bh.consume(zipped.unzip)
 }
