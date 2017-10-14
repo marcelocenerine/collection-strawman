@@ -6,8 +6,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import strawman.collection.immutable.List
 
-import scala.language.implicitConversions
-
 @RunWith(classOf[JUnit4])
 class TupleZippedTest {
 
@@ -16,8 +14,8 @@ class TupleZippedTest {
   private val ys = List("a", "b", "c", "d", "e", "f")
   private val zs = List(true, false, true, false, true, false)
   private val zipped2 = ws lazyZip xs
-  private val zipped3 = zipped2 lazyZip ys
-  private val zipped4 = zipped3 lazyZip zs
+  private val zipped3 = ws lazyZip xs lazyZip ys
+  private val zipped4 = ws lazyZip xs lazyZip ys lazyZip zs
 
   @Test
   def tuple2Zipped_map(): Unit = {
@@ -35,9 +33,9 @@ class TupleZippedTest {
 
   @Test
   def tuple2Zipped_filter(): Unit = {
-    val res: (List[Int], List[Int]) = zipped2.filter((a, _) => a % 2 == 0)
+    val res: List[(Int, Int)] = zipped2.filter((a, _) => a % 2 == 0)
 
-    assertEquals((List(2), List(2)), res)
+    assertEquals(List((2, 2)), res)
   }
 
   @Test
@@ -83,9 +81,9 @@ class TupleZippedTest {
 
   @Test
   def tuple3Zipped_filter(): Unit = {
-    val res: (List[Int], List[Int], List[String]) = zipped3.filter((a, _, _) => a % 2 != 0)
+    val res: List[(Int, Int, String)] = zipped3.filter((a, _, _) => a % 2 != 0)
 
-    assertEquals((List(1, 3), List(1, 3), List("a", "c")), res)
+    assertEquals(List((1, 1, "a"), (3, 3, "c")), res)
   }
 
   @Test
@@ -131,9 +129,9 @@ class TupleZippedTest {
 
   @Test
   def tuple4Zipped_filter(): Unit = {
-    val res: (List[Int], List[Int], List[String], List[Boolean]) = zipped4.filter((_, _, _, d) => d)
+    val res: List[(Int, Int, String, Boolean)] = zipped4.filter((_, _, _, d) => d)
 
-    assertEquals((List(1, 3), List(1, 3), List("a", "c"), List(true, true)), res)
+    assertEquals(List((1, 1, "a", true), (3, 3, "c", true)), res)
   }
 
   @Test
