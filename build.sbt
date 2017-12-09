@@ -164,7 +164,7 @@ val memoryBenchmark =
     .dependsOn(collectionsJVM)
     .settings(commonSettings ++ disablePublishing)
     .settings(
-      libraryDependencies += ("org.spire-math" %% "jawn-ast" % "0.10.4").withDottyCompat(),
+      libraryDependencies += ("org.spire-math" % "jawn-ast_2.12" % "0.10.4").withDottyCompat(),
       charts := Def.inputTaskDyn {
         val targetDir = crossTarget.value
         val report = targetDir / "report.json"
