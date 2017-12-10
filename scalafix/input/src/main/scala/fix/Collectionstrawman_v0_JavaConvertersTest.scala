@@ -5,7 +5,7 @@ package fix
 
 import collection.JavaConverters._
 
-class ConvertersTest {
+object Collectionstrawman_v0_JavaConvertersTest {
   def foo(xs: java.util.List[Int]): List[Int] = xs.asScala.toList
   def bar(xs: java.util.Map[Int, String]): Map[Int, String] = xs.asScala.toMap
   def baz(xs: List[Int]): java.util.List[Int] = xs.asJava
